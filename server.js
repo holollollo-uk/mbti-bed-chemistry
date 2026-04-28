@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 app.use(cors());
@@ -9,15 +8,9 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const dataPath = path.join(__dirname, 'data.json');
 
-let data = {};
-if (fs.existsSync(dataPath)) {
-  data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
-  console.log(`data.json 로드 완료: ${Object.keys(data).length}개`);
-} else {
-  console.log('data.json 없음. 요청 시 생성합니다.');
-}
+// 메모리 캐시 (서버 재시작 시 초기화됨)
+const cache = {};
 
 async function generateFromAPI(mbti1, mbti2) {
   const prompt = `반드시 순수 JSON만 출력해. { 로 시작해서 } 로 끝나야 해. 마크다운, ---, 설명, 코드블록 절대 금지.
@@ -70,8 +63,9 @@ app.post('/api/analyze', async (req, res) => {
   const key1 = `${mbti1}_${mbti2}`;
   const key2 = `${mbti2}_${mbti1}`;
 
-  if (data[key1]) return res.json({ result: data[key1] });
-  if (data[key2]) return res.json({ result: data[key2] });
+  // 메모리 캐시 확인
+  if (cache[key1]) return res.json({ result: cache[key1] });
+  if (cache[key2]) return res.json({ result: cache[key2] });
 
   if (!GEMINI_API_KEY) {
     return res.status(500).json({ error: 'GEMINI_API_KEY가 설정되지 않았습니다.' });
@@ -80,16 +74,15 @@ app.post('/api/analyze', async (req, res) => {
   try {
     console.log(`API 호출: ${key1}`);
     const parsed = await generateFromAPI(mbti1, mbti2);
-    data[key1] = parsed;
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf-8');
-    console.log(`저장 완료: ${key1} (총 ${Object.keys(data).length}개)`);
+    cache[key1] = parsed;
+    console.log(`캐시 저장: ${key1}`);
     res.json({ result: parsed });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`서버 실행 중: http://localhost:${PORT}`);
 });
