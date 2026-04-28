@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>MBTI 침대케미</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            :root {
+                --bg: #0d0d0d;
+                --surface: #161616;
+                --border: rgba(255, 255, 255, 0.08);
+                --accent: #c94b7b;
+                --accent-light: #e8789f;
+                --text: #f0ece6;
+                --muted: #7a7470;
+                --serif: "Noto Serif KR", serif;
+                --sans: "Noto Sans KR", sans-serif;
+            }
+            body {
+                background: var(--bg);
+                color: var(--text);
+                font-family: var(--sans);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 3rem 1rem;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 3rem;
+            }
+            .badge {
+                display: inline-block;
+                border: 1px solid var(--accent);
+                color: var(--accent);
+                font-size: 11px;
+                letter-spacing: 0.15em;
+                padding: 3px 10px;
+                border-radius: 999px;
+                margin-bottom: 1rem;
+            }
+            h1 {
+                font-family: var(--serif);
+                font-size: 36px;
+                font-weight: 700;
+                margin-bottom: 0.5rem;
+                background: linear-gradient(135deg, #f0ece6 0%, #c94b7b 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .desc {
+                font-size: 14px;
+                color: var(--muted);
+            }
+            .card {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                padding: 2rem;
+                width: 100%;
+                max-width: 560px;
+            }
+            .selector-row {
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
+                gap: 1rem;
+                align-items: end;
+                margin-bottom: 1.5rem;
+            }
+            .vs {
+                font-family: var(--serif);
+                font-size: 18px;
+                color: var(--accent);
+                text-align: center;
+                font-weight: 700;
+                padding-bottom: 10px;
+            }
+            .select-wrap {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+            .select-label {
+                font-size: 11px;
+                color: var(--muted);
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+            }
+            .gender-row {
+                display: flex;
+                gap: 6px;
+                margin-bottom: 6px;
+            }
+            .gender-btn {
+                flex: 1;
+                padding: 6px;
+                background: #1e1e1e;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                color: var(--muted);
+                font-size: 13px;
+                font-family: var(--sans);
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+            .gender-btn.active {
+                border-color: var(--accent);
+                color: var(--accent);
+                background: rgba(201, 75, 123, 0.1);
+            }
+            select {
+                background: #1e1e1e;
+                color: var(--text);
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 10px 12px;
+                font-size: 16px;
+                font-family: var(--sans);
+                cursor: pointer;
+                outline: none;
+                width: 100%;
+                transition: border-color 0.2s;
+            }
+            select:hover,
+            select:focus {
+                border-color: var(--accent);
+            }
+            .btn {
+                width: 100%;
+                padding: 0.9rem;
+                background: var(--accent);
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-size: 15px;
+                font-weight: 500;
+                font-family: var(--sans);
+                cursor: pointer;
+                transition: opacity 0.15s;
+            }
+            .btn:hover {
+                opacity: 0.9;
+            }
+            .btn:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+            .result-wrap {
+                margin-top: 1.5rem;
+                border-top: 1px solid var(--border);
+                padding-top: 1.5rem;
+            }
+            .result-header {
+                font-size: 12px;
+                color: var(--muted);
+                letter-spacing: 0.1em;
+                margin-bottom: 1.5rem;
+            }
+            .loading {
+                text-align: center;
+                padding: 2rem 0;
+                color: var(--muted);
+                font-size: 14px;
+            }
+            .dot-anim::after {
+                content: "";
+                animation: dots 1.2s infinite;
+            }
+            @keyframes dots {
+                0% {
+                    content: "";
+                }
+                33% {
+                    content: ".";
+                }
+                66% {
+                    content: "..";
+                }
+                100% {
+                    content: "...";
+                }
+            }
+            .error {
+                color: #e05555;
+                font-size: 13px;
+                text-align: center;
+                padding: 1rem 0;
+            }
+            .footer {
+                margin-top: 2rem;
+                font-size: 12px;
+                color: var(--muted);
+                text-align: center;
+            }
+
+            /* 결과 스타일 */
+            .result-body {
+                font-family: var(--serif);
+            }
+            .summary {
+                font-size: 17px;
+                font-weight: 700;
+                color: var(--text);
+                line-height: 1.7;
+                margin-bottom: 2rem;
+                padding: 1rem;
+                background: rgba(201, 75, 123, 0.08);
+                border-left: 3px solid var(--accent);
+                border-radius: 4px;
+            }
+            .section {
+                margin-bottom: 1.5rem;
+            }
+            .section-title {
+                font-size: 19px;
+                font-weight: 700;
+                color: var(--accent);
+                margin-bottom: 0.8rem;
+                padding-bottom: 0.3rem;
+                border-bottom: 1px solid var(--border);
+                font-family: var(--sans);
+            }
+            .sub-block {
+                margin-bottom: 0.8rem;
+            }
+            .sub-label {
+                font-size: 15px;
+                font-weight: 700;
+                color: var(--accent-light);
+                letter-spacing: 0.05em;
+                margin-bottom: 0.2rem;
+                font-family: var(--sans);
+            }
+            .sub-text {
+                font-size: 15px;
+                color: var(--text);
+                line-height: 1.8;
+            }
+            .try-list {
+                list-style: none;
+                padding: 0;
+            }
+            .try-list li {
+                display: flex;
+                gap: 12px;
+                padding: 0.6rem 0;
+                border-bottom: 1px solid var(--border);
+                font-size: 15px;
+                line-height: 1.7;
+            }
+            .try-list li:last-child {
+                border-bottom: none;
+            }
+            .try-num {
+                color: var(--accent);
+                font-weight: 700;
+                font-family: var(--sans);
+                min-width: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="badge">19+ ADULT ONLY</div>
+            <h1>MBTI 침대케미</h1>
+            <p class="desc">두 유형의 침대 위 케미를 분석해드립니다</p>
+        </div>
+
+        <div class="card">
+            <div class="selector-row">
+                <div class="select-wrap">
+                    <div class="select-label">첫 번째</div>
+                    <div class="gender-row">
+                        <button
+                            class="gender-btn active"
+                            id="g1-male"
+                            onclick="setGender(1, '남')"
+                        >
+                            남자
+                        </button>
+                        <button
+                            class="gender-btn"
+                            id="g1-female"
+                            onclick="setGender(1, '여')"
+                        >
+                            여자
+                        </button>
+                    </div>
+                    <select id="mbti1"></select>
+                </div>
+                <div class="vs">VS</div>
+                <div class="select-wrap">
+                    <div class="select-label">두 번째</div>
+                    <div class="gender-row">
+                        <button
+                            class="gender-btn"
+                            id="g2-male"
+                            onclick="setGender(2, '남')"
+                        >
+                            남자
+                        </button>
+                        <button
+                            class="gender-btn active"
+                            id="g2-female"
+                            onclick="setGender(2, '여')"
+                        >
+                            여자
+                        </button>
+                    </div>
+                    <select id="mbti2"></select>
+                </div>
+            </div>
+
+            <button class="btn" id="analyzeBtn" onclick="analyze()">
+                궁합 분석하기
+            </button>
+
+            <div class="result-wrap" id="resultWrap" style="display: none">
+                <div class="result-header" id="resultHeader"></div>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            성인 전용 서비스입니다. 만 19세 이상만 이용해주세요.
+        </div>
+
+        <script>
+            const types = [
+                "INTJ",
+                "INTP",
+                "ENTJ",
+                "ENTP",
+                "INFJ",
+                "INFP",
+                "ENFJ",
+                "ENFP",
+                "ISTJ",
+                "ISFJ",
+                "ESTJ",
+                "ESFJ",
+                "ISTP",
+                "ISFP",
+                "ESTP",
+                "ESFP",
+            ];
+            const s1 = document.getElementById("mbti1");
+            const s2 = document.getElementById("mbti2");
+            let gender1 = "남",
+                gender2 = "여";
+
+            types.forEach((t) => {
+                s1.innerHTML += `<option value="${t}">${t}</option>`;
+                s2.innerHTML += `<option value="${t}">${t}</option>`;
+            });
+            s1.value = "INFJ";
+            s2.value = "ENTP";
+
+            function setGender(slot, g) {
+                if (slot === 1) {
+                    gender1 = g;
+                    document
+                        .getElementById("g1-male")
+                        .classList.toggle("active", g === "남");
+                    document
+                        .getElementById("g1-female")
+                        .classList.toggle("active", g === "여");
+                } else {
+                    gender2 = g;
+                    document
+                        .getElementById("g2-male")
+                        .classList.toggle("active", g === "남");
+                    document
+                        .getElementById("g2-female")
+                        .classList.toggle("active", g === "여");
+                }
+            }
+
+            function renderResult(r, m1, m2, g1, g2) {
+                return `
+    <div class="result-body">
+      <div class="summary">${r.summary}</div>
+
+      <div class="section">
+        <div class="section-title">왜 이렇게 끌리냐면</div>
+        <div class="sub-block">
+          <div class="sub-label">${m1}(${g1})이 ${m2}(${g2})한테 끌리는 이유</div>
+          <div class="sub-text">${r.attraction_male}</div>
+        </div>
+        <div class="sub-block">
+          <div class="sub-label">${m2}(${g2})이 ${m1}(${g1})한테 끌리는 이유</div>
+          <div class="sub-text">${r.attraction_female}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">침대에서 실제로 어떻게 되냐면</div>
+        <div class="sub-block">
+          <div class="sub-label">${m1}(${g1})는</div>
+          <div class="sub-text">${r.bedroom_male}</div>
+        </div>
+        <div class="sub-block">
+          <div class="sub-label">${m2}(${g2})는</div>
+          <div class="sub-text">${r.bedroom_female}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">이 조합만의 가장 뜨거운 포인트</div>
+        <div class="sub-block">
+          <div class="sub-label">${m1}(${g1}) 입장에서</div>
+          <div class="sub-text">${r.hotpoint_male}</div>
+        </div>
+        <div class="sub-block">
+          <div class="sub-label">${m2}(${g2}) 입장에서</div>
+          <div class="sub-text">${r.hotpoint_female}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">갈등 / 해결법</div>
+        <div class="sub-block">
+          <div class="sub-label">문제</div>
+          <div class="sub-text">${r.conflict}</div>
+        </div>
+        <div class="sub-block">
+          <div class="sub-label">해결법</div>
+          <div class="sub-text">${r.solution}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">오늘 밤 새로운 시도 추천</div>
+        <ul class="try-list">
+          <li><span class="try-num">1.</span><span>${r.try1}</span></li>
+          <li><span class="try-num">2.</span><span>${r.try2}</span></li>
+          <li><span class="try-num">3.</span><span>${r.try3}</span></li>
+        </ul>
+      </div>
+    </div>
+  `;
+            }
+
+            async function analyze() {
+                const m1 = s1.value,
+                    m2 = s2.value;
+                const wrap = document.getElementById("resultWrap");
+                const header = document.getElementById("resultHeader");
+                const content = document.getElementById("resultContent");
+                const btn = document.getElementById("analyzeBtn");
+
+                if (m1 === m2) {
+                    wrap.style.display = "block";
+                    content.innerHTML =
+                        '<div class="error">서로 다른 유형을 선택해주세요</div>';
+                    return;
+                }
+
+                let male = m1,
+                    female = m2;
+                if (gender1 === "여") {
+                    male = m2;
+                    female = m1;
+                }
+
+                btn.disabled = true;
+                wrap.style.display = "block";
+                header.textContent = `${m1}(${gender1}) × ${m2}(${gender2}) 분석 결과`;
+                content.innerHTML =
+                    '<div class="loading"><span class="dot-anim">분석 중</span></div>';
+
+                try {
+                    const res = await fetch("/api/analyze", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ mbti1: male, mbti2: female }),
+                    });
+                    const data = await res.json();
+                    if (data.error) {
+                        content.innerHTML = `<div class="error">${data.error}</div>`;
+                    } else {
+                        content.innerHTML = renderResult(
+                            data.result,
+                            m1,
+                            m2,
+                            gender1,
+                            gender2,
+                        );
+                    }
+                } catch (e) {
+                    content.innerHTML = `<div class="error">서버 오류: ${e.message}</div>`;
+                }
+                btn.disabled = false;
+            }
+        </script>
+    </body>
+</html>
