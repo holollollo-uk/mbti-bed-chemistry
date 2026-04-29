@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "MBTI 유형을 모두 입력해주세요" });
   }
 
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+  const GEMINI_API_KEY = "AIzaSyALG8vPK6kxf4k0nJDAUnFJz7qdb5qgyHM";
 
   if (!GEMINI_API_KEY) {
     return res
