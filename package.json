@@ -1,5 +1,4 @@
 {
-  "type": "module",
   "name": "mbti-침대케미",
   "version": "1.0.0",
   "main": "server.js",
