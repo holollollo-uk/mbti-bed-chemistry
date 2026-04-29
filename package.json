@@ -10,3 +10,12 @@
     "express": "^4.18.2"
   }
 }
+{
+  "type": "module",
+  "name": "mbti-침대케미",
+  ...
+  {
+    "type": "module",
+    "name": "mbti-침대케미",
+    ...
+  }
