@@ -2,20 +2,6 @@
 <html lang="ko">
     <head>
         <meta charset="UTF-8" />
-        <!-- Google tag (gtag.js) -->
-        <script
-            async
-            src="https://www.googletagmanager.com/gtag/js?id=G-N6SV4BF7KD"
-        ></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {
-                dataLayer.push(arguments);
-            }
-            gtag("js", new Date());
-
-            gtag("config", "G-N6SV4BF7KD");
-        </script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>MBTI 침대케미</title>
         <link
@@ -219,6 +205,56 @@
                 color: var(--muted);
                 text-align: center;
             }
+            .share-wrap {
+                margin-top: 1.5rem;
+                display: flex;
+                gap: 8px;
+            }
+            .share-btn {
+                flex: 1;
+                padding: 0.7rem;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                background: #1e1e1e;
+                color: var(--text);
+                font-size: 14px;
+                font-family: var(--sans);
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+            .share-btn:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+            }
+            .share-btn.copied {
+                border-color: #1d9e75;
+                color: #1d9e75;
+            }
+            .share-wrap {
+                margin-top: 1.5rem;
+                display: flex;
+                gap: 8px;
+            }
+            .share-btn {
+                flex: 1;
+                padding: 0.7rem;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                background: #1e1e1e;
+                color: var(--text);
+                font-size: 14px;
+                font-family: var(--sans);
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+            .share-btn:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+            }
+            .share-btn.copied {
+                border-color: #1d9e75;
+                color: #1d9e75;
+            }
 
             /* 결과 스타일 */
             .result-body {
@@ -239,7 +275,7 @@
                 margin-bottom: 1.5rem;
             }
             .section-title {
-                font-size: 19px;
+                font-size: 16px;
                 font-weight: 700;
                 color: var(--accent);
                 margin-bottom: 0.8rem;
@@ -251,7 +287,7 @@
                 margin-bottom: 0.8rem;
             }
             .sub-label {
-                font-size: 15px;
+                font-size: 12px;
                 font-weight: 700;
                 color: var(--accent-light);
                 letter-spacing: 0.05em;
@@ -345,6 +381,14 @@
             <div class="result-wrap" id="resultWrap" style="display: none">
                 <div class="result-header" id="resultHeader"></div>
                 <div id="resultContent"></div>
+                <div class="share-wrap" id="shareWrap" style="display: none">
+                    <button class="share-btn" onclick="copyLink()">
+                        🔗 링크 복사
+                    </button>
+                    <button class="share-btn" onclick="shareKakao()">
+                        💬 카카오톡 공유
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -508,16 +552,58 @@
                     } else {
                         content.innerHTML = renderResult(
                             data.result,
-                            m1,
-                            m2,
-                            gender1,
-                            gender2,
+                            male,
+                            female,
+                            "남",
+                            "여",
                         );
+                        document.getElementById("shareWrap").style.display =
+                            "flex";
+                        // GA 이벤트: 분석 완료
+                        gtag("event", "analyze_complete", {
+                            mbti1: m1,
+                            mbti2: m2,
+                        });
                     }
                 } catch (e) {
                     content.innerHTML = `<div class="error">서버 오류: ${e.message}</div>`;
                 }
                 btn.disabled = false;
+            }
+
+            function copyLink() {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                    const btn = event.target;
+                    btn.textContent = "✅ 복사됐어요!";
+                    btn.classList.add("copied");
+                    // GA 이벤트: 링크 복사
+                    gtag("event", "share_link_copy");
+                    setTimeout(() => {
+                        btn.textContent = "🔗 링크 복사";
+                        btn.classList.remove("copied");
+                    }, 2000);
+                });
+            }
+
+            function shareKakao() {
+                const url = window.location.href;
+                const text = `MBTI 침대케미 - 우리 궁합 확인해봐 👀\n${url}`;
+                // GA 이벤트: 카카오 공유
+                gtag("event", "share_kakao");
+                if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+                    window.location.href = `kakaotalk://msg/send?text=${encodeURIComponent(text)}`;
+                    setTimeout(() => {
+                        copyLink();
+                    }, 500);
+                } else {
+                    copyLink();
+                    event.target.textContent =
+                        "💬 링크 복사됐어요! 카톡에 붙여넣기 하세요";
+                    setTimeout(() => {
+                        event.target.textContent = "💬 카카오톡 공유";
+                    }, 3000);
+                }
             }
         </script>
     </body>
