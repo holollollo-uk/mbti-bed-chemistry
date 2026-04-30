@@ -381,14 +381,6 @@
             <div class="result-wrap" id="resultWrap" style="display: none">
                 <div class="result-header" id="resultHeader"></div>
                 <div id="resultContent"></div>
-                <div class="share-wrap" id="shareWrap" style="display: none">
-                    <button class="share-btn" onclick="copyLink()">
-                        🔗 링크 복사
-                    </button>
-                    <button class="share-btn" onclick="shareKakao()">
-                        💬 카카오톡 공유
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -448,6 +440,12 @@
             }
 
             function renderResult(r, m1, m2, g1, g2) {
+                const attr1 = g1 === "남" ? r.attraction_male : r.attraction_female;
+                const attr2 = g2 === "남" ? r.attraction_male : r.attraction_female;
+                const bed1 = g1 === "남" ? r.bedroom_male : r.bedroom_female;
+                const bed2 = g2 === "남" ? r.bedroom_male : r.bedroom_female;
+                const hot1 = g1 === "남" ? r.hotpoint_male : r.hotpoint_female;
+                const hot2 = g2 === "남" ? r.hotpoint_male : r.hotpoint_female;
                 return `
     <div class="result-body">
       <div class="summary">${r.summary}</div>
@@ -456,11 +454,11 @@
         <div class="section-title">왜 이렇게 끌리냐면</div>
         <div class="sub-block">
           <div class="sub-label">${m1}(${g1})이 ${m2}(${g2})한테 끌리는 이유</div>
-          <div class="sub-text">${r.attraction_male}</div>
+          <div class="sub-text">${attr1}</div>
         </div>
         <div class="sub-block">
           <div class="sub-label">${m2}(${g2})이 ${m1}(${g1})한테 끌리는 이유</div>
-          <div class="sub-text">${r.attraction_female}</div>
+          <div class="sub-text">${attr2}</div>
         </div>
       </div>
 
@@ -468,11 +466,11 @@
         <div class="section-title">침대에서 실제로 어떻게 되냐면</div>
         <div class="sub-block">
           <div class="sub-label">${m1}(${g1})는</div>
-          <div class="sub-text">${r.bedroom_male}</div>
+          <div class="sub-text">${bed1}</div>
         </div>
         <div class="sub-block">
           <div class="sub-label">${m2}(${g2})는</div>
-          <div class="sub-text">${r.bedroom_female}</div>
+          <div class="sub-text">${bed2}</div>
         </div>
       </div>
 
@@ -480,11 +478,11 @@
         <div class="section-title">이 조합만의 가장 뜨거운 포인트</div>
         <div class="sub-block">
           <div class="sub-label">${m1}(${g1}) 입장에서</div>
-          <div class="sub-text">${r.hotpoint_male}</div>
+          <div class="sub-text">${hot1}</div>
         </div>
         <div class="sub-block">
           <div class="sub-label">${m2}(${g2}) 입장에서</div>
-          <div class="sub-text">${r.hotpoint_female}</div>
+          <div class="sub-text">${hot2}</div>
         </div>
       </div>
 
@@ -508,6 +506,10 @@
           <li><span class="try-num">3.</span><span>${r.try3}</span></li>
         </ul>
       </div>
+    </div>
+    <div class="share-wrap">
+      <button class="share-btn" onclick="copyLink(event)">🔗 링크 복사</button>
+      <button class="share-btn" onclick="shareKakao(event)">💬 카카오톡 공유</button>
     </div>
   `;
             }
@@ -552,18 +554,11 @@
                     } else {
                         content.innerHTML = renderResult(
                             data.result,
-                            male,
-                            female,
-                            "남",
-                            "여",
+                            m1,
+                            m2,
+                            gender1,
+                            gender2,
                         );
-                        document.getElementById("shareWrap").style.display =
-                            "flex";
-                        // GA 이벤트: 분석 완료
-                        gtag("event", "analyze_complete", {
-                            mbti1: m1,
-                            mbti2: m2,
-                        });
                     }
                 } catch (e) {
                     content.innerHTML = `<div class="error">서버 오류: ${e.message}</div>`;
@@ -571,14 +566,12 @@
                 btn.disabled = false;
             }
 
-            function copyLink() {
+            function copyLink(event) {
                 const url = window.location.href;
+                const btn = event.target;
                 navigator.clipboard.writeText(url).then(() => {
-                    const btn = event.target;
                     btn.textContent = "✅ 복사됐어요!";
                     btn.classList.add("copied");
-                    // GA 이벤트: 링크 복사
-                    gtag("event", "share_link_copy");
                     setTimeout(() => {
                         btn.textContent = "🔗 링크 복사";
                         btn.classList.remove("copied");
@@ -586,18 +579,16 @@
                 });
             }
 
-            function shareKakao() {
+            function shareKakao(event) {
                 const url = window.location.href;
                 const text = `MBTI 침대케미 - 우리 궁합 확인해봐 👀\n${url}`;
-                // GA 이벤트: 카카오 공유
-                gtag("event", "share_kakao");
                 if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
                     window.location.href = `kakaotalk://msg/send?text=${encodeURIComponent(text)}`;
                     setTimeout(() => {
-                        copyLink();
+                        copyLink(event);
                     }, 500);
                 } else {
-                    copyLink();
+                    copyLink(event);
                     event.target.textContent =
                         "💬 링크 복사됐어요! 카톡에 붙여넣기 하세요";
                     setTimeout(() => {
