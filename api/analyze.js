@@ -1,3 +1,5 @@
+const { createClient } = require("@supabase/supabase-js");
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -15,6 +17,26 @@ module.exports = async function handler(req, res) {
     return res
       .status(500)
       .json({ error: "GEMINI_API_KEY가 설정되지 않았습니다." });
+  }
+
+  const SUPABASE_URL = process.env.SUPABASE_URL || "";
+  const SUPABASE_KEY = process.env.SUPABASE_KEY || "";
+  const supabase =
+    SUPABASE_URL && SUPABASE_KEY
+      ? createClient(SUPABASE_URL, SUPABASE_KEY)
+      : null;
+
+  const cacheKey = `${mbti1}_${mbti2}`;
+
+  if (supabase) {
+    const { data } = await supabase
+      .from("mbti_results")
+      .select("result")
+      .eq("key", cacheKey)
+      .maybeSingle();
+    if (data) {
+      return res.status(200).json({ result: data.result });
+    }
   }
 
   const prompt = `반드시 순수 JSON만 출력해. { 로 시작해서 } 로 끝나야 해. 마크다운, ---, 설명, 코드블록 절대 금지.
@@ -58,6 +80,13 @@ try3: 오늘 밤 새로운 시도 3번. 구체적으로. 읽으면 해보고 싶
       const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
       const clean = text.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(clean);
+
+      if (supabase) {
+        await supabase
+          .from("mbti_results")
+          .upsert({ key: cacheKey, result: parsed });
+      }
+
       return res.status(200).json({ result: parsed });
     } catch (e) {
       const isOverload =
