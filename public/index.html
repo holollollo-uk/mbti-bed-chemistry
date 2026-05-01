@@ -275,7 +275,7 @@
                 margin-bottom: 1.5rem;
             }
             .section-title {
-                font-size: 16px;
+                font-size: 20px;
                 font-weight: 700;
                 color: var(--accent);
                 margin-bottom: 0.8rem;
@@ -295,7 +295,7 @@
                 font-family: var(--sans);
             }
             .sub-text {
-                font-size: 15px;
+                font-size: 18px;
                 color: var(--text);
                 line-height: 1.8;
             }
@@ -440,8 +440,10 @@
             }
 
             function renderResult(r, m1, m2, g1, g2) {
-                const attr1 = g1 === "남" ? r.attraction_male : r.attraction_female;
-                const attr2 = g2 === "남" ? r.attraction_male : r.attraction_female;
+                const attr1 =
+                    g1 === "남" ? r.attraction_male : r.attraction_female;
+                const attr2 =
+                    g2 === "남" ? r.attraction_male : r.attraction_female;
                 const bed1 = g1 === "남" ? r.bedroom_male : r.bedroom_female;
                 const bed2 = g2 === "남" ? r.bedroom_male : r.bedroom_female;
                 const hot1 = g1 === "남" ? r.hotpoint_male : r.hotpoint_female;
@@ -553,7 +555,9 @@
                     try {
                         data = JSON.parse(text);
                     } catch {
-                        throw new Error("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+                        throw new Error(
+                            "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+                        );
                     }
                     if (data.error) {
                         content.innerHTML = `<div class="error">${data.error}</div>`;
