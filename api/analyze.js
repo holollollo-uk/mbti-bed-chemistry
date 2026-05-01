@@ -1,6 +1,7 @@
 const { createClient } = require("@supabase/supabase-js");
 
 module.exports = async function handler(req, res) {
+  try {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -97,5 +98,8 @@ try3: 오늘 밤 새로운 시도 3번. 구체적으로. 읽으면 해보고 싶
         return res.status(500).json({ error: e.message });
       }
     }
+  }
+  } catch (e) {
+    return res.status(500).json({ error: "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요." });
   }
 };
