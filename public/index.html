@@ -208,6 +208,7 @@
             .share-wrap {
                 margin-top: 1.5rem;
                 display: flex;
+                flex-direction: row;
                 gap: 8px;
             }
             .share-btn {
@@ -230,30 +231,12 @@
                 border-color: #1d9e75;
                 color: #1d9e75;
             }
-            .share-wrap {
-                margin-top: 1.5rem;
-                display: flex;
-                gap: 8px;
-            }
-            .share-btn {
-                flex: 1;
-                padding: 0.7rem;
-                border: 1px solid var(--border);
-                border-radius: 10px;
-                background: #1e1e1e;
-                color: var(--text);
-                font-size: 14px;
-                font-family: var(--sans);
-                cursor: pointer;
-                transition: all 0.15s;
-            }
-            .share-btn:hover {
-                border-color: var(--accent);
-                color: var(--accent);
-            }
-            .share-btn.copied {
-                border-color: #1d9e75;
+            .share-msg {
+                font-size: 13px;
                 color: #1d9e75;
+                text-align: center;
+                margin-top: 8px;
+                min-height: 20px;
             }
 
             /* 결과 스타일 */
@@ -419,6 +402,18 @@
             s1.value = "INFJ";
             s2.value = "ENTP";
 
+            // URL 파라미터가 있으면 즉시 결과 표시
+            (function () {
+                const params = new URLSearchParams(window.location.search);
+                const urlMbti1 = params.get("mbti1");
+                const urlMbti2 = params.get("mbti2");
+                if (urlMbti1 && urlMbti2 && types.includes(urlMbti1) && types.includes(urlMbti2)) {
+                    s1.value = urlMbti1;
+                    s2.value = urlMbti2;
+                    analyze();
+                }
+            })();
+
             function setGender(slot, g) {
                 if (slot === 1) {
                     gender1 = g;
@@ -510,9 +505,10 @@
       </div>
     </div>
     <div class="share-wrap">
-      <button class="share-btn" onclick="copyLink(event)">🔗 링크 복사</button>
-      <button class="share-btn" onclick="shareKakao(event)">💬 카카오톡 공유</button>
+      <button class="share-btn" onclick="copyResultLink(event, '${m1}', '${m2}')">🔗 결과 링크 복사</button>
+      <button class="share-btn" onclick="copyTestLink(event)">💌 테스트 공유하기</button>
     </div>
+    <div id="shareMsg" class="share-msg"></div>
   `;
             }
 
@@ -576,35 +572,32 @@
                 btn.disabled = false;
             }
 
-            function copyLink(event) {
-                const url = window.location.href;
+            function showShareMsg(msg) {
+                const el = document.getElementById("shareMsg");
+                if (el) {
+                    el.textContent = msg;
+                    setTimeout(() => { el.textContent = ""; }, 3000);
+                }
+            }
+
+            function copyResultLink(event, m1, m2) {
+                const url = `https://mbti-bed-chemistry.vercel.app/?mbti1=${m1}&mbti2=${m2}`;
                 const btn = event.target;
                 navigator.clipboard.writeText(url).then(() => {
-                    btn.textContent = "✅ 복사됐어요!";
                     btn.classList.add("copied");
-                    setTimeout(() => {
-                        btn.textContent = "🔗 링크 복사";
-                        btn.classList.remove("copied");
-                    }, 2000);
+                    showShareMsg("내 결과 링크가 복사되었습니다! 애인에게 전달해보세요. 😉");
+                    setTimeout(() => btn.classList.remove("copied"), 2000);
                 });
             }
 
-            function shareKakao(event) {
-                const url = window.location.href;
-                const text = `MBTI 침대케미 - 우리 궁합 확인해봐 👀\n${url}`;
-                if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-                    window.location.href = `kakaotalk://msg/send?text=${encodeURIComponent(text)}`;
-                    setTimeout(() => {
-                        copyLink(event);
-                    }, 500);
-                } else {
-                    copyLink(event);
-                    event.target.textContent =
-                        "💬 링크 복사됐어요! 카톡에 붙여넣기 하세요";
-                    setTimeout(() => {
-                        event.target.textContent = "💬 카카오톡 공유";
-                    }, 3000);
-                }
+            function copyTestLink(event) {
+                const url = "https://mbti-bed-chemistry.vercel.app/";
+                const btn = event.target;
+                navigator.clipboard.writeText(url).then(() => {
+                    btn.classList.add("copied");
+                    showShareMsg("테스트 링크가 복사되었습니다!");
+                    setTimeout(() => btn.classList.remove("copied"), 2000);
+                });
             }
         </script>
     </body>
