@@ -4,6 +4,14 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>MBTI 침대케미</title>
+        <!-- Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-N6SV4BF7KD"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-N6SV4BF7KD');
+        </script>
         <link
             href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Noto+Sans+KR:wght@400;500&display=swap"
             rel="stylesheet"
@@ -671,6 +679,7 @@
                 const btn = event.target;
                 navigator.clipboard.writeText(url).then(() => {
                     logClick('share_click');
+                    gtag('event', 'share', { method: 'result_link', content_type: 'mbti_result', item_id: `${m1}_${m2}` });
                     btn.classList.add("copied");
                     showShareMsg("내 결과 링크가 복사되었습니다! 애인에게 전달해보세요. 😉");
                     setTimeout(() => btn.classList.remove("copied"), 2000);
@@ -682,6 +691,7 @@
                 const btn = event.target;
                 navigator.clipboard.writeText(url).then(() => {
                     logClick('share_click');
+                    gtag('event', 'share', { method: 'test_link', content_type: 'site' });
                     btn.classList.add("copied");
                     showShareMsg("테스트 링크가 복사되었습니다!");
                     setTimeout(() => btn.classList.remove("copied"), 2000);
