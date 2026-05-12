@@ -303,6 +303,48 @@
                 font-family: var(--sans);
                 min-width: 20px;
             }
+            .premium-btn {
+                width: 100%;
+                margin-top: 1.2rem;
+                padding: 1rem 1.2rem;
+                background: linear-gradient(135deg, #c94b7b 0%, #8c2d55 100%);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 700;
+                font-family: var(--sans);
+                cursor: pointer;
+                transition: all 0.2s;
+                box-shadow: 0 4px 20px rgba(201, 75, 123, 0.45);
+                letter-spacing: 0.02em;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            }
+            .premium-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 28px rgba(201, 75, 123, 0.6);
+            }
+            .premium-btn:active {
+                transform: translateY(0);
+            }
+            .premium-price {
+                font-size: 13px;
+                font-weight: 500;
+                opacity: 0.85;
+            }
+            .admin-corner {
+                position: fixed;
+                bottom: 0;
+                right: 0;
+                width: 48px;
+                height: 48px;
+                z-index: 9999;
+                cursor: default;
+                -webkit-tap-highlight-color: transparent;
+            }
         </style>
     </head>
     <body>
@@ -371,7 +413,50 @@
             성인 전용 서비스입니다. 만 19세 이상만 이용해주세요.
         </div>
 
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <script>
+            // import { supabase } from './supabaseClient' — CDN 방식으로 동일하게 초기화
+            const _supabaseUrl = "https://wfsirxjairtcizgwgogu.supabase.co";
+            const _supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indmc2lyeGphaXJ0Y2l6Z3dnb2d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTA1MDEsImV4cCI6MjA5MzEyNjUwMX0.kYlafiVNBDFgTnSxB-F4mKwWOR-L3-QfH92Ju9FgnAg";
+            const supabase = window.supabase.createClient(_supabaseUrl, _supabaseKey);
+
+            async function logClick(buttonName) {
+                try {
+                    await supabase.from('click_logs').insert({ button_name: buttonName });
+                } catch (e) { /* 로깅 실패는 무시 */ }
+            }
+
+            async function handleReportClick() {
+                await logClick('report_click');
+                alert("현재 접속자가 많아 결제 시스템 점검 중입니다. 잠시 후 다시 시도해 주세요!");
+            }
+
+            let _adminCount = 0;
+            let _adminTimer = null;
+
+            function handleAdminCornerClick() {
+                _adminCount++;
+                clearTimeout(_adminTimer);
+                _adminTimer = setTimeout(() => { _adminCount = 0; }, 3000);
+                if (_adminCount >= 5) {
+                    _adminCount = 0;
+                    fetchAdminStats();
+                }
+            }
+
+            async function fetchAdminStats() {
+                try {
+                    const { count, error } = await supabase
+                        .from('click_logs')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('button_name', 'report_click');
+                    if (error) throw error;
+                    alert(`[관리자] report_click 총 횟수: ${count}회`);
+                } catch (e) {
+                    alert(`[관리자] 조회 실패: ${e.message}`);
+                }
+            }
+
             const types = [
                 "INTJ",
                 "INTP",
@@ -509,6 +594,9 @@
       <button class="share-btn" onclick="copyTestLink(event)">💌 테스트 공유하기</button>
     </div>
     <div id="shareMsg" class="share-msg"></div>
+    <button class="premium-btn" onclick="handleReportClick()">
+      🔒 정밀 보고서 확인하기 <span class="premium-price">(2,900원)</span>
+    </button>
   `;
             }
 
@@ -584,6 +672,7 @@
                 const url = `https://mbti-bed-chemistry.vercel.app/?mbti1=${m1}&mbti2=${m2}`;
                 const btn = event.target;
                 navigator.clipboard.writeText(url).then(() => {
+                    logClick('share_click');
                     btn.classList.add("copied");
                     showShareMsg("내 결과 링크가 복사되었습니다! 애인에게 전달해보세요. 😉");
                     setTimeout(() => btn.classList.remove("copied"), 2000);
@@ -594,11 +683,13 @@
                 const url = "https://mbti-bed-chemistry.vercel.app/";
                 const btn = event.target;
                 navigator.clipboard.writeText(url).then(() => {
+                    logClick('share_click');
                     btn.classList.add("copied");
                     showShareMsg("테스트 링크가 복사되었습니다!");
                     setTimeout(() => btn.classList.remove("copied"), 2000);
                 });
             }
         </script>
+        <div class="admin-corner" onclick="handleAdminCornerClick()"></div>
     </body>
 </html>
