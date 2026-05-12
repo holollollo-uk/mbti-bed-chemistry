@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem C:\\\\Users\\\\김태형\\\\mbti-침대케미 -Exclude node_modules)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\김태형\\\\mbti-침대케미\" | Where-Object { $_.Name -ne 'node_modules' } | Format-Table Name, PSIsContainer)",
+      "PowerShell(Get-ChildItem C:\\\\Users\\\\김태형\\\\mbti-침대케미 -Recurse -Exclude node_modules | Where-Object { $_.FullName -notmatch \"node_modules\" } | Select-Object FullName)",
+      "PowerShell(Remove-Item *)",
+      "PowerShell(cmd /c \"rd /s /q \"\"C:\\\\Users\\\\김태형\\\\mbti-침대케미\\\\scr\"\"\")"
+    ]
+  }
+}

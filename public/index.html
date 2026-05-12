@@ -414,15 +414,12 @@
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="src/supabaseClient.js"></script>
         <script>
-            // import { supabase } from './supabaseClient' — CDN 방식으로 동일하게 초기화
-            const _supabaseUrl = "https://wfsirxjairtcizgwgogu.supabase.co";
-            const _supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indmc2lyeGphaXJ0Y2l6Z3dnb2d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTA1MDEsImV4cCI6MjA5MzEyNjUwMX0.kYlafiVNBDFgTnSxB-F4mKwWOR-L3-QfH92Ju9FgnAg";
-            const supabase = window.supabase.createClient(_supabaseUrl, _supabaseKey);
-
             async function logClick(buttonName) {
                 try {
-                    await supabase.from('click_logs').insert({ button_name: buttonName });
+                    if (!supabaseClient) return;
+                    await supabaseClient.from('click_logs').insert({ button_name: buttonName });
                 } catch (e) { /* 로깅 실패는 무시 */ }
             }
 
@@ -445,8 +442,9 @@
             }
 
             async function fetchAdminStats() {
+                if (!supabaseClient) { alert('[관리자] Supabase 연결 없음'); return; }
                 try {
-                    const { count, error } = await supabase
+                    const { count, error } = await supabaseClient
                         .from('click_logs')
                         .select('*', { count: 'exact', head: true })
                         .eq('button_name', 'report_click');
